@@ -7,6 +7,57 @@
 #include "parser.h"
 #include "INS570L.h"
 #include "gps.h"
+#include "cjson/cJSON.h"
+
+void gnssimu2json(struct gnss_imu *d)
+{
+	cJSON *top = NULL;
+	top = cJSON_CreateObject();
+	cJSON *leafs = cJSON_CreateObject();
+	cJSON_AddItemToObject(top, "NavInfo",leafs );
+	{
+		cJSON *node =  cJSON_CreateObject();
+		cJSON_AddItemToObject(leafs, "AttiAngle" ,node);
+		cJSON_AddNumberToObject(node, "AngleHeading", (d->azimuth * 360.0/32768.0));
+		cJSON_AddNumberToObject(node, "AnglePitch", (d->pitch * 360.0/32768.0));
+		cJSON_AddNumberToObject(node, "AngleRoll", (d->roll * 360.0/32768.0));
+	};
+	{
+		cJSON *node =  cJSON_CreateObject();
+		cJSON_AddItemToObject(leafs, "IMUAngRateRaw" ,node);
+		cJSON_AddNumberToObject(node, "AngRateRawX", (d->gyro_x[0] * 300.0/32768.0));
+		cJSON_AddNumberToObject(node, "AngRateRawY", (d->gyro_x[1] * 300.0/32768.0));
+		cJSON_AddNumberToObject(node, "AngRateRawZ", (d->gyro_x[2] * 300.0/32768.0));
+        };
+	{
+		cJSON *node =  cJSON_CreateObject();
+		cJSON_AddItemToObject(leafs, "IMUAccelRaw" ,node);
+		cJSON_AddNumberToObject(node, "AccelRawX", (d->accel_x[0] * 12.0/32768.0));
+		cJSON_AddNumberToObject(node, "AccelRawY", (d->accel_x[1] * 12.0/32768.0));
+		cJSON_AddNumberToObject(node, "AccelRawZ", (d->accel_x[2] * 12.0/32768.0));
+	};
+	{
+		cJSON_AddNumberToObject(leafs, "PosLat", d->latitude);
+		cJSON_AddNumberToObject(leafs, "PosLon", d->longitude);
+		cJSON_AddNumberToObject(leafs, "PosAlt", d->altitude);
+	};
+	{
+		cJSON *node =  cJSON_CreateObject();
+		cJSON_AddItemToObject(leafs, "Vels" ,node);
+		cJSON_AddNumberToObject(node, "VelN", d->northvelocity * 0.01 / 32768.0);
+		cJSON_AddNumberToObject(node, "VelE", d->eastvelocity * 0.01 / 32768.0);
+		cJSON_AddNumberToObject(node, "VelU", d->groundvelocity * 0.01 / 32768.0);
+	};
+	{
+		cJSON *node =  cJSON_CreateObject();
+		cJSON_AddItemToObject(leafs, "Time" ,node);
+		cJSON_AddNumberToObject(node, "WeekTime", d->gpsweek);
+		cJSON_AddNumberToObject(node, "GpsTime", (uint32_t)(d->time * 0.001 * 0.25));
+	}
+	
+	printf("\n%s\n", cJSON_Print(top));
+	
+}
 
 void dump_gnss_imu(struct gnss_imu *d)
 {
@@ -49,7 +100,8 @@ int my_parser(uint8_t *data, int data_length)
 			for( x = 0; x < data_length; x++ ){
 				printf( " 0x%02X ", data[ x ] );
 			}
-			dump_gnss_imu(&mydata);	
+			gnssimu2json(&mydata);
+			//dump_gnss_imu(&mydata);	
 		}
 	}
         printf( "\n\n\n" );
