@@ -27,6 +27,7 @@ int main( int argc, char** argv ){
     int data_length;
     int x;
 
+    int loop = 0;
     /*
      * Use the first argument as the port to open
      */
@@ -78,7 +79,7 @@ int main( int argc, char** argv ){
     c_serial_set_parity( m_port, CSERIAL_PARITY_NONE );
     c_serial_set_flow_control( m_port, CSERIAL_FLOW_NONE );
 
-    printf( "Baud rate is %d\n", c_serial_get_baud_rate( m_port ) );
+//    printf( "Baud rate is %d\n", c_serial_get_baud_rate( m_port ) );
 
     /*
      * We want to get all line flags when they change
@@ -110,5 +111,6 @@ int main( int argc, char** argv ){
         }
         printf( "\n\n\n" );
 #endif
-    }while( 1 );
+	loop ++;
+    }while( loop < 10 );
 }

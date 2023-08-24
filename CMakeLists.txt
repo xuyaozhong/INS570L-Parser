@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.3.0)
-set(my_tty "mytty")
+set(my_tty "gnss")
 
 
 link_directories(
